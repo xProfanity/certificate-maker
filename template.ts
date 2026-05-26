@@ -1,3 +1,5 @@
+import {printCertificate, elementPrinter} from "./helper.js"
+
 export const template = (fullname: String) => `
 <html lang="en">
 <head>
@@ -6,6 +8,41 @@ export const template = (fullname: String) => `
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>
 <title>Certificate of Completion – Sycamore Consult Limited</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script type="module">
+
+	export const printCertificate = async (element, name) => {
+		console.log("printing")
+		const {jsPDF} = window.jspdf
+		const certificate = element
+		try {
+			const canvas = await html2canvas(certificate)
+			const canvasImage = await canvas.toDataURL("image/png")
+		
+			const certificatePDF = new jsPDF({
+				orientation: "landscape",
+				unit: 'px',
+				format: [canvas.width, canvas.height]
+			})
+
+			certificatePDF.addImage(canvasImage, 'PNG', 0, 0, canvas.width, canvas.height)
+		
+			certificatePDF.save("_cscertificate.pdf")
+		
+		} catch (error) {
+			console.error(error)	
+			throw error
+		}
+
+	}
+
+	document.querySelector('.btn-print').addEventListener('click', () =>  printCertificate(document.getElementById("cert-wrapper"), "${fullname}"))
+
+</script>
+
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -533,7 +570,7 @@ export const template = (fullname: String) => `
 </head>
 <body>
 
-<div class="cert-wrapper">
+<div class="cert-wrapper" id="cert-wrapper">
   <!-- OUTER FRAME -->
   <div class="outer-frame">
     <div class="gold-frame">
@@ -625,7 +662,7 @@ export const template = (fullname: String) => `
             <div class="date-block">
               <div class="date-placeholder">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
               <div style="height:8px"></div>
-              <div class="date-label">Date of Issue</div>
+              <div class="date-label">22 May, 2026</div>
             </div>
           </div>
 
@@ -649,10 +686,9 @@ export const template = (fullname: String) => `
 
   <!-- PRINT BUTTON -->
   <div class="print-controls">
-    <button class="btn btn-print" onclick="window.print()">🖨 Print / Save as PDF</button>
+    <button class="btn btn-print">🖨 Print / Save as PDF</button>
   </div>
 </div>
-
 </body>
 </html>
 `
